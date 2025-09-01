@@ -1,0 +1,20 @@
+{
+  "name": "task-manager-fullstack",
+  "version": "1.0.0",
+  "description": "Full Stack Task Manager with React Native and Node.js",
+  "main": "index.js",
+  "scripts": {
+    "backend": "cd backend && npm run dev",
+    "mobile": "cd mobile-app && npx expo start",
+    "backend:install": "cd backend && npm install",
+    "mobile:install": "cd mobile-app && npm install",
+    "install-all": "npm run backend:install && npm run mobile:install",
+    "backend:start": "cd backend && npm start",
+    "mobile:android": "cd mobile-app && npx expo start --android",
+    "mobile:ios": "cd mobile-app && npx expo start --ios",
+    "mobile:web": "cd mobile-app && npx expo start --web"
+  },
+  "keywords": ["react-native", "nodejs", "express", "mongodb", "expo", "task-manager"],
+  "author": "",
+  "license": "MIT"
+}

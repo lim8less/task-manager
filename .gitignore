@@ -1,0 +1,57 @@
+# --- Environment files ---
+.env
+.env.*
+backend/.env
+mobile-app/.env
+
+# --- Node dependencies ---
+backend/node_modules/
+mobile-app/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Build outputs / caches ---
+backend/dist/
+backend/build/
+backend/.cache/
+backend/.parcel-cache/
+
+# --- Tests/Coverage ---
+coverage/
+.nyc_output/
+
+# --- Expo / React Native ---
+mobile-app/.expo/
+mobile-app/.expo-shared/
+mobile-app/.expo/*
+mobile-app/*.expo/*
+mobile-app/*.expo-shared/*
+mobile-app/*.bundle
+mobile-app/*.map
+mobile-app/*.keystore
+mobile-app/*.jks
+mobile-app/android/
+mobile-app/ios/
+
+# --- Logs ---
+logs/
+*.log
+*.log.*
+
+# --- OS / Editor files ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Misc ---
+.tern-port
+.eslintcache
+.stylelintcache
+.tsbuildinfo
+
+
