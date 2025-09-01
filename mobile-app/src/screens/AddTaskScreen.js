@@ -45,6 +45,21 @@ const AddTaskScreen = ({ navigation }) => {
       newErrors.description = 'Description must be less than 500 characters';
     }
 
+    // Enhanced validation for due date and reminder time
+    if (formData.dueDate) {
+      const now = new Date();
+      if (formData.dueDate < now) {
+        newErrors.dueDate = 'Due date cannot be in the past';
+      }
+    }
+
+    if (formData.reminderTime) {
+      const now = new Date();
+      if (formData.reminderTime < now) {
+        newErrors.reminderTime = 'Reminder time cannot be in the past';
+      }
+    }
+
     if (formData.dueDate && formData.reminderTime && formData.reminderTime >= formData.dueDate) {
       newErrors.reminderTime = 'Reminder must be before due date';
     }
@@ -109,14 +124,54 @@ const AddTaskScreen = ({ navigation }) => {
     setShowReminderPicker(true);
   };
 
+  // Helper functions for date/time selection
+  const getMinimumDate = () => {
+    const now = new Date();
+    // Allow tasks due today (same day) but not in the past
+    return now;
+  };
+
+  const getMinimumReminderDate = () => {
+    const now = new Date();
+    return now;
+  };
+
+  const getDefaultDueDate = () => {
+    const now = new Date();
+    // Set default to 1 hour from now
+    now.setHours(now.getHours() + 1);
+    return now;
+  };
+
+  const getDefaultReminderTime = () => {
+    const now = new Date();
+    // Set default to 30 minutes from now
+    now.setMinutes(now.getMinutes() + 30);
+    return now;
+  };
+
   const formatDate = (date) => {
     if (!date) return 'Not set';
-    return date.toLocaleDateString();
+    const now = new Date();
+    const taskDate = new Date(date);
+    
+    if (taskDate.toDateString() === now.toDateString()) {
+      return 'Today at ' + taskDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    return taskDate.toLocaleDateString() + ' ' + taskDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   const formatTime = (date) => {
     if (!date) return 'Not set';
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const now = new Date();
+    const reminderDate = new Date(date);
+    
+    if (reminderDate.toDateString() === now.toDateString()) {
+      return 'Today at ' + reminderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    return reminderDate.toLocaleDateString() + ' ' + reminderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   const priorities = [
@@ -193,6 +248,15 @@ const AddTaskScreen = ({ navigation }) => {
                 {formatDate(formData.dueDate)}
               </Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.quickButton}
+              onPress={() => updateField('dueDate', getDefaultDueDate())}
+            >
+              <Text style={styles.quickButtonText}>Due in 1 hour</Text>
+            </TouchableOpacity>
+            {errors.dueDate && (
+              <Text style={styles.errorText}>{errors.dueDate}</Text>
+            )}
           </View>
 
           {/* Reminder Time */}
@@ -206,6 +270,12 @@ const AddTaskScreen = ({ navigation }) => {
               <Text style={styles.dateButtonText}>
                 {formatTime(formData.reminderTime)}
               </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.quickButton}
+              onPress={() => updateField('reminderTime', getDefaultReminderTime())}
+            >
+              <Text style={styles.quickButtonText}>Remind in 30 minutes</Text>
             </TouchableOpacity>
             {errors.reminderTime && (
               <Text style={styles.errorText}>{errors.reminderTime}</Text>
@@ -228,7 +298,8 @@ const AddTaskScreen = ({ navigation }) => {
           mode={pickerMode}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleDateChange}
-          minimumDate={pickerMode === 'date' ? new Date() : undefined}
+          minimumDate={pickerMode === 'date' ? getMinimumDate() : getMinimumReminderDate()}
+          minuteInterval={15} // Allow 15-minute intervals for reminders
         />
       )}
     </KeyboardAvoidingView>
@@ -315,6 +386,19 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 16,
     color: '#333',
+  },
+  quickButton: {
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#f0f8ff',
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  quickButtonText: {
+    color: '#007AFF',
+    fontSize: 14,
+    fontWeight: '500',
   },
   createButton: {
     marginTop: 20,
