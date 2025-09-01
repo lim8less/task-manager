@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#007AFF"
     },
@@ -37,6 +37,12 @@
           "color": "#007AFF"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "apiUrl": "https://task-manager-wqrk.onrender.com/api",
+      "eas": {
+        "projectId": "8c2e13e3-1d7e-4b05-9a92-b693dbe2773a"
+      }
+    }
   }
 }
