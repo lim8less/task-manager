@@ -73,17 +73,58 @@ class ApiService {
   }
 
   async createTask(taskData) {
-    const response = await this.api.post('/tasks', taskData);
-    return response.data;
+    console.log('�� Creating task with data:', taskData);
+    try {
+      const response = await this.api.post('/tasks', taskData);
+      console.log('✅ Task created successfully:', response.data);
+      
+      // Schedule reminder if reminder time is set
+      if (taskData.reminderTime) {
+        const notificationService = require('./notificationService').default;
+        await notificationService.scheduleTaskReminder(
+          response.data.task._id,
+          taskData.title,
+          new Date(taskData.reminderTime),
+          taskData.dueDate ? new Date(taskData.dueDate) : null
+        );
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.log('❌ Task creation failed:', error.message);
+      console.log('🔍 Error details:', error.response?.data || error);
+      throw error;
+    }
   }
-
+  
   async updateTask(taskId, updateData) {
     const response = await this.api.put(`/tasks/${taskId}`, updateData);
+    
+    // Update reminders if due date or reminder time changed
+    if (updateData.reminderTime || updateData.dueDate) {
+      const notificationService = require('./notificationService').default;
+      await notificationService.cancelTaskReminder(taskId);
+      
+      if (updateData.reminderTime) {
+        await notificationService.scheduleTaskReminder(
+          taskId,
+          updateData.title,
+          new Date(updateData.reminderTime),
+          updateData.dueDate ? new Date(updateData.dueDate) : null
+        );
+      }
+    }
+    
     return response.data;
   }
-
+  
   async deleteTask(taskId) {
     const response = await this.api.delete(`/tasks/${taskId}`);
+    
+    // Cancel any scheduled reminders for this task
+    const notificationService = require('./notificationService').default;
+    await notificationService.cancelTaskReminder(taskId);
+    
     return response.data;
   }
 

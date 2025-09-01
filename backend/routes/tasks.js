@@ -39,7 +39,19 @@ router.post('/', [
     .optional()
     .trim()
     .isLength({ max: 500 })
-    .withMessage('Description must be less than 500 characters')
+    .withMessage('Description must be less than 500 characters'),
+  body('dueDate')
+    .optional()
+    .isISO8601()
+    .withMessage('Due date must be a valid date'),
+  body('reminderTime')
+    .optional()
+    .isISO8601()
+    .withMessage('Reminder time must be a valid date'),
+  body('priority')
+    .optional()
+    .isIn(['low', 'medium', 'high'])
+    .withMessage('Priority must be low, medium, or high')
 ], async (req, res) => {
   try {
     // Check for validation errors
@@ -52,13 +64,16 @@ router.post('/', [
       });
     }
 
-    const { title, description } = req.body;
+    const { title, description, dueDate, reminderTime, priority } = req.body;
 
     const task = new Task({
       userId: req.user._id,
       title,
       description: description || '',
-      status: 'pending'
+      status: 'pending',
+      dueDate: dueDate || null,
+      reminderTime: reminderTime || null,
+      priority: priority || 'medium'
     });
 
     await task.save();
@@ -95,7 +110,19 @@ router.put('/:id', [
   body('status')
     .optional()
     .isIn(['pending', 'completed'])
-    .withMessage('Status must be either pending or completed')
+    .withMessage('Status must be either pending or completed'),
+  body('dueDate')
+    .optional()
+    .isISO8601()
+    .withMessage('Due date must be a valid date'),
+  body('reminderTime')
+    .optional()
+    .isISO8601()
+    .withMessage('Reminder time must be a valid date'),
+  body('priority')
+    .optional()
+    .isIn(['low', 'medium', 'high'])
+    .withMessage('Priority must be low, medium, or high')
 ], async (req, res) => {
   try {
     // Check for validation errors
@@ -115,7 +142,10 @@ router.put('/:id', [
     if (req.body.title !== undefined) updateData.title = req.body.title;
     if (req.body.description !== undefined) updateData.description = req.body.description;
     if (req.body.status !== undefined) updateData.status = req.body.status;
-
+    if (req.body.dueDate !== undefined) updateData.dueDate = req.body.dueDate;
+    if (req.body.reminderTime !== undefined) updateData.reminderTime = req.body.reminderTime;
+    if (req.body.priority !== undefined) updateData.priority = req.body.priority;
+    
     const task = await Task.findOneAndUpdate(
       { _id: id, userId: req.user._id },
       updateData,

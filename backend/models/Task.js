@@ -1,3 +1,4 @@
+// backend/models/Task.js - Enhanced version
 const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({
@@ -21,12 +22,30 @@ const taskSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'completed'],
     default: 'pending'
+  },
+  dueDate: {
+    type: Date,
+    default: null
+  },
+  reminderTime: {
+    type: Date,
+    default: null
+  },
+  priority: {
+    type: String,
+    enum: ['low', 'medium', 'high'],
+    default: 'medium'
+  },
+  notificationId: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true
 });
 
-// Index for faster queries by user
-taskSchema.index({ userId: 1 });
+// Index for faster queries by user and due date
+taskSchema.index({ userId: 1, dueDate: 1 });
+taskSchema.index({ userId: 1, status: 1 });
 
 module.exports = mongoose.model('Task', taskSchema);

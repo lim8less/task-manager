@@ -1,5 +1,7 @@
+// mobile-app/src/components/TaskCard.js - Enhanced version
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const TaskCard = ({ task, onToggleStatus, onEdit, onDelete }) => {
   const handleDelete = () => {
@@ -14,9 +16,34 @@ const TaskCard = ({ task, onToggleStatus, onEdit, onDelete }) => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+
+  const formatDueDate = (dueDate) => {
+    if (!dueDate) return '';
+    const date = new Date(dueDate);
+    const now = new Date();
+    const diffTime = date - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return 'Overdue';
+    if (diffDays === 0) return 'Due today';
+    if (diffDays === 1) return 'Due tomorrow';
+    return `Due in ${diffDays} days`;
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high': return '#FF4444';
+      case 'medium': return '#FFAA00';
+      case 'low': return '#44AA44';
+      default: return '#FFAA00';
+    }
+  };
+
+  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
 
   return (
     <View style={[styles.card, task.status === 'completed' && styles.completedCard]}>
@@ -34,12 +61,18 @@ const TaskCard = ({ task, onToggleStatus, onEdit, onDelete }) => {
         </TouchableOpacity>
         
         <View style={styles.taskContent}>
-          <Text style={[
-            styles.title,
-            task.status === 'completed' && styles.completedText
-          ]}>
-            {task.title}
-          </Text>
+          <View style={styles.titleRow}>
+            <Text style={[
+              styles.title,
+              task.status === 'completed' && styles.completedText
+            ]}>
+              {task.title}
+            </Text>
+            <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(task.priority) }]}>
+              <Text style={styles.priorityText}>{task.priority}</Text>
+            </View>
+          </View>
+          
           {task.description ? (
             <Text style={[
               styles.description,
@@ -48,9 +81,20 @@ const TaskCard = ({ task, onToggleStatus, onEdit, onDelete }) => {
               {task.description}
             </Text>
           ) : null}
-          <Text style={styles.date}>
-            Created: {formatDate(task.createdAt)}
-          </Text>
+          
+          <View style={styles.dateInfo}>
+            <Text style={styles.date}>
+              Created: {formatDate(task.createdAt)}
+            </Text>
+            {task.dueDate && (
+              <Text style={[
+                styles.dueDate,
+                isOverdue && styles.overdueText
+              ]}>
+                {formatDueDate(task.dueDate)}
+              </Text>
+            )}
+          </View>
         </View>
       </View>
 
@@ -59,14 +103,14 @@ const TaskCard = ({ task, onToggleStatus, onEdit, onDelete }) => {
           style={styles.actionButton}
           onPress={() => onEdit(task)}
         >
-          <Text style={styles.editText}>Edit</Text>
+          <Ionicons name="pencil" size={20} color="#007AFF" />
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
+          style={styles.actionButton}
           onPress={handleDelete}
         >
-          <Text style={styles.deleteText}>Delete</Text>
+          <Ionicons name="trash" size={20} color="#FF3B30" />
         </TouchableOpacity>
       </View>
     </View>
@@ -78,8 +122,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
-    marginVertical: 8,
-    marginHorizontal: 16,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -87,13 +130,12 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   completedCard: {
+    opacity: 0.7,
     backgroundColor: '#f8f9fa',
-    opacity: 0.8,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 12,
   },
   statusButton: {
     marginRight: 12,
@@ -105,25 +147,43 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 2,
     borderColor: '#007AFF',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   checkboxCompleted: {
     backgroundColor: '#007AFF',
   },
   checkmark: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   taskContent: {
     flex: 1,
   },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
   title: {
     fontSize: 18,
     fontWeight: '600',
     color: '#333',
-    marginBottom: 4,
+    flex: 1,
+    marginRight: 8,
+  },
+  priorityBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  priorityText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
   },
   description: {
     fontSize: 14,
@@ -135,30 +195,35 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     color: '#999',
   },
+  dateInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   date: {
     fontSize: 12,
     color: '#999',
   },
+  dueDate: {
+    fontSize: 12,
+    color: '#007AFF',
+    fontWeight: '500',
+  },
+  overdueText: {
+    color: '#FF3B30',
+    fontWeight: 'bold',
+  },
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 12,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
   },
   actionButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-  },
-  deleteButton: {
-    backgroundColor: '#FF3B30',
-  },
-  editText: {
-    color: '#007AFF',
-    fontWeight: '600',
-  },
-  deleteText: {
-    color: '#fff',
-    fontWeight: '600',
+    padding: 8,
+    marginLeft: 8,
   },
 });
 
