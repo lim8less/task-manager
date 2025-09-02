@@ -105,7 +105,7 @@ const AddTaskScreen = ({ navigation }) => {
     
     // Only update if user didn't cancel
     if (event.type === 'set' && selectedDate) {
-      if (pickerMode === 'date') {
+      if (pickerMode === 'datetime') { // Changed from 'date' to 'datetime'
         updateField('dueDate', selectedDate);
       } else if (pickerMode === 'time') {
         updateField('reminderTime', selectedDate);
@@ -115,7 +115,7 @@ const AddTaskScreen = ({ navigation }) => {
 
   // Fix: Separate functions for date and time
   const showDueDatePicker = () => {
-    setPickerMode('date');
+    setPickerMode('datetime'); // Changed from 'date' to 'datetime'
     setShowDatePicker(true);
   };
 
@@ -294,11 +294,11 @@ const AddTaskScreen = ({ navigation }) => {
       {/* Fix: Single DateTimePicker with proper mode */}
       {(showDatePicker || showReminderPicker) && (
         <DateTimePicker
-          value={pickerMode === 'date' ? (formData.dueDate || new Date()) : (formData.reminderTime || new Date())}
+          value={pickerMode === 'datetime' ? (formData.dueDate || new Date()) : (formData.reminderTime || new Date())}
           mode={pickerMode}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleDateChange}
-          minimumDate={pickerMode === 'date' ? getMinimumDate() : getMinimumReminderDate()}
+          minimumDate={pickerMode === 'datetime' ? getMinimumDate() : getMinimumReminderDate()}
           minuteInterval={15} // Allow 15-minute intervals for reminders
         />
       )}
