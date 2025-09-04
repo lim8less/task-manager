@@ -48,21 +48,18 @@ const AddTaskScreen = ({ navigation }) => {
     // Enhanced validation for due date and reminder time
     if (formData.dueDate) {
       const now = new Date();
-      if (formData.dueDate < now) {
+      const dueDateOnly = new Date(formData.dueDate);
+      dueDateOnly.setHours(0, 0, 0, 0);
+      const nowDateOnly = new Date(now);
+      nowDateOnly.setHours(0, 0, 0, 0);
+      
+      if (dueDateOnly < nowDateOnly) {
         newErrors.dueDate = 'Due date cannot be in the past';
       }
     }
 
-    if (formData.reminderTime) {
-      const now = new Date();
-      if (formData.reminderTime < now) {
-        newErrors.reminderTime = 'Reminder time cannot be in the past';
-      }
-    }
-
-    if (formData.dueDate && formData.reminderTime && formData.reminderTime >= formData.dueDate) {
-      newErrors.reminderTime = 'Reminder must be before due date';
-    }
+    // For time-only reminders, we don't need to validate against current time
+    // The reminder will be scheduled for the due date at the specified time
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -103,19 +100,32 @@ const AddTaskScreen = ({ navigation }) => {
     setShowDatePicker(false);
     setShowReminderPicker(false);
     
-    // Only update if user didn't cancel
-    if (event.type === 'set' && selectedDate) {
-      if (pickerMode === 'datetime') { // Changed from 'date' to 'datetime'
+    // Only proceed if we have a valid date
+    if (!selectedDate) return;
+    
+    // Handle different platforms
+    if (Platform.OS === 'android') {
+      // On Android, just check if selectedDate exists
+      if (pickerMode === 'date') {
         updateField('dueDate', selectedDate);
       } else if (pickerMode === 'time') {
         updateField('reminderTime', selectedDate);
+      }
+    } else {
+      // On iOS, check event.type
+      if (event.type === 'set') {
+        if (pickerMode === 'date') {
+          updateField('dueDate', selectedDate);
+        } else if (pickerMode === 'time') {
+          updateField('reminderTime', selectedDate);
+        }
       }
     }
   };
 
   // Fix: Separate functions for date and time
   const showDueDatePicker = () => {
-    setPickerMode('datetime'); // Changed from 'date' to 'datetime'
+    setPickerMode('date'); // Use 'date' only for due date
     setShowDatePicker(true);
   };
 
@@ -138,15 +148,14 @@ const AddTaskScreen = ({ navigation }) => {
 
   const getDefaultDueDate = () => {
     const now = new Date();
-    // Set default to 1 hour from now
-    now.setHours(now.getHours() + 1);
+    // Set default to today (date only, no time)
     return now;
   };
 
   const getDefaultReminderTime = () => {
     const now = new Date();
-    // Set default to 30 minutes from now
-    now.setMinutes(now.getMinutes() + 30);
+    // Set default to 9:00 AM (time only)
+    now.setHours(9, 0, 0, 0);
     return now;
   };
 
@@ -156,22 +165,15 @@ const AddTaskScreen = ({ navigation }) => {
     const taskDate = new Date(date);
     
     if (taskDate.toDateString() === now.toDateString()) {
-      return 'Today at ' + taskDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return 'Today';
     }
     
-    return taskDate.toLocaleDateString() + ' ' + taskDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return taskDate.toLocaleDateString();
   };
 
   const formatTime = (date) => {
     if (!date) return 'Not set';
-    const now = new Date();
-    const reminderDate = new Date(date);
-    
-    if (reminderDate.toDateString() === now.toDateString()) {
-      return 'Today at ' + reminderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-    
-    return reminderDate.toLocaleDateString() + ' ' + reminderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   const priorities = [
@@ -252,7 +254,7 @@ const AddTaskScreen = ({ navigation }) => {
               style={styles.quickButton}
               onPress={() => updateField('dueDate', getDefaultDueDate())}
             >
-              <Text style={styles.quickButtonText}>Due in 1 hour</Text>
+              <Text style={styles.quickButtonText}>Due today</Text>
             </TouchableOpacity>
             {errors.dueDate && (
               <Text style={styles.errorText}>{errors.dueDate}</Text>
@@ -261,7 +263,7 @@ const AddTaskScreen = ({ navigation }) => {
 
           {/* Reminder Time */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Reminder</Text>
+            <Text style={styles.sectionTitle}>Reminder Time</Text>
             <TouchableOpacity
               style={styles.dateButton}
               onPress={showReminderTimePicker}
@@ -275,7 +277,7 @@ const AddTaskScreen = ({ navigation }) => {
               style={styles.quickButton}
               onPress={() => updateField('reminderTime', getDefaultReminderTime())}
             >
-              <Text style={styles.quickButtonText}>Remind in 30 minutes</Text>
+              <Text style={styles.quickButtonText}>Remind at 9:00 AM</Text>
             </TouchableOpacity>
             {errors.reminderTime && (
               <Text style={styles.errorText}>{errors.reminderTime}</Text>
@@ -294,12 +296,20 @@ const AddTaskScreen = ({ navigation }) => {
       {/* Fix: Single DateTimePicker with proper mode */}
       {(showDatePicker || showReminderPicker) && (
         <DateTimePicker
-          value={pickerMode === 'datetime' ? (formData.dueDate || new Date()) : (formData.reminderTime || new Date())}
+          value={
+            pickerMode === 'date' 
+              ? (formData.dueDate || new Date()) 
+              : (formData.reminderTime || new Date())
+          }
           mode={pickerMode}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleDateChange}
-          minimumDate={pickerMode === 'datetime' ? getMinimumDate() : getMinimumReminderDate()}
-          minuteInterval={15} // Allow 15-minute intervals for reminders
+          minimumDate={
+            pickerMode === 'date' 
+              ? getMinimumDate() 
+              : getMinimumReminderDate()
+          }
+          minuteInterval={1}
         />
       )}
     </KeyboardAvoidingView>

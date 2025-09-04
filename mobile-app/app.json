@@ -13,7 +13,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.taskmanager.app"
+      "bundleIdentifier": "com.taskmanager.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": ["remote-notification"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +27,9 @@
       "package": "com.taskmanager.app",
       "permissions": [
         "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.VIBRATE"
+        "android.permission.VIBRATE",
+        "android.permission.WAKE_LOCK",
+        "android.permission.FOREGROUND_SERVICE"
       ]
     },
     "web": {

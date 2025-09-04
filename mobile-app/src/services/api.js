@@ -23,7 +23,6 @@ class ApiService {
           }
           return config;
         } catch (error) {
-          console.error('Error getting token from storage:', error);
           return config;
         }
       },
@@ -48,15 +47,10 @@ class ApiService {
 
   // Authentication APIs
   async register(userData) {
-    console.log('🚀 Attempting registration with URL:', this.api.defaults.baseURL);
-    console.log('📤 Registration data:', userData);
     try {
       const response = await this.api.post('/auth/register', userData);
-      console.log('✅ Registration successful:', response.data);
       return response.data;
     } catch (error) {
-      console.log('❌ Registration failed:', error.message);
-      console.log('🔍 Error details:', error.response?.data || error);
       throw error;
     }
   }
@@ -73,10 +67,8 @@ class ApiService {
   }
 
   async createTask(taskData) {
-    console.log('�� Creating task with data:', taskData);
     try {
       const response = await this.api.post('/tasks', taskData);
-      console.log('✅ Task created successfully:', response.data);
       
       // Schedule reminder if reminder time is set
       if (taskData.reminderTime) {
@@ -84,15 +76,13 @@ class ApiService {
         await notificationService.scheduleTaskReminder(
           response.data.task._id,
           taskData.title,
-          new Date(taskData.reminderTime),
-          taskData.dueDate ? new Date(taskData.dueDate) : null
+          taskData.reminderTime,
+          taskData.dueDate
         );
       }
       
       return response.data;
     } catch (error) {
-      console.log('❌ Task creation failed:', error.message);
-      console.log('🔍 Error details:', error.response?.data || error);
       throw error;
     }
   }
@@ -109,8 +99,8 @@ class ApiService {
         await notificationService.scheduleTaskReminder(
           taskId,
           updateData.title,
-          new Date(updateData.reminderTime),
-          updateData.dueDate ? new Date(updateData.dueDate) : null
+          updateData.reminderTime,
+          updateData.dueDate
         );
       }
     }
@@ -134,7 +124,7 @@ class ApiService {
       await AsyncStorage.setItem('token', token);
       await AsyncStorage.setItem('user', JSON.stringify(user));
     } catch (error) {
-      console.error('Error storing auth data:', error);
+      // Storage failed
     }
   }
 
@@ -145,7 +135,6 @@ class ApiService {
       const user = userStr ? JSON.parse(userStr) : null;
       return { token, user };
     } catch (error) {
-      console.error('Error getting stored auth data:', error);
       return { token: null, user: null };
     }
   }
@@ -155,7 +144,7 @@ class ApiService {
       await AsyncStorage.removeItem('token');
       await AsyncStorage.removeItem('user');
     } catch (error) {
-      console.error('Error clearing auth data:', error);
+      // Clear failed
     }
   }
 }

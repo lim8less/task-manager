@@ -1,6 +1,6 @@
 # 📱 Full Stack Task Manager App
 
-A complete cross-platform mobile task management application built with **React Native (Expo)** and **Node.js + Express** backend.
+A complete cross-platform mobile task management application built with **React Native (Expo)** and **Node.js + Express** backend, featuring calendar integration, time-based reminders, and push notifications.
 
 ## 🚀 Features
 
@@ -10,8 +10,10 @@ A complete cross-platform mobile task management application built with **React 
 - ✅ Protected API routes
 - ✅ CRUD operations for tasks
 - ✅ User-specific task management
-- ✅ Input validation
+- ✅ Input validation with express-validator
 - ✅ MongoDB Atlas integration
+- ✅ Task due dates and reminder times
+- ✅ Task priority levels (low, medium, high)
 - ✅ Ready for Render deployment
 
 ### Mobile App (React Native + Expo)
@@ -19,10 +21,14 @@ A complete cross-platform mobile task management application built with **React 
 - ✅ Authentication screens with validation
 - ✅ JWT token management with AsyncStorage
 - ✅ Task CRUD operations
+- ✅ Calendar integration with date pickers
+- ✅ Time-based reminder scheduling
+- ✅ Push notifications with background support
+- ✅ Task priority management
 - ✅ Clean, intuitive UI with reusable components
 - ✅ Pull-to-refresh functionality
-- ✅ Push notifications for task completion
 - ✅ Logout functionality
+- ✅ Production-ready builds with EAS
 
 ## 📁 Project Structure
 
@@ -32,14 +38,13 @@ task-manager/
 │   ├── middleware/               # JWT auth middleware
 │   │   └── auth.js
 │   ├── models/                   # Mongoose models
-│   │   ├── Task.js
+│   │   ├── Task.js               # Enhanced with dueDate, reminderTime, priority
 │   │   └── User.js
 │   ├── routes/                   # API routes
 │   │   ├── auth.js
-│   │   └── tasks.js
+│   │   └── tasks.js              # Enhanced with validation
 │   ├── server.js                 # Server entry
 │   ├── package.json              # Backend dependencies/scripts
-│   ├── render.yaml               # Render deployment config
 │   └── README.md                 # Backend docs
 │
 ├── mobile-app/                   # React Native (Expo) app
@@ -47,36 +52,35 @@ task-manager/
 │   │   ├── components/           # Reusable UI components
 │   │   │   ├── Button.js
 │   │   │   ├── InputField.js
-│   │   │   └── TaskCard.js
-│   │   ├── config/               # Reads API_URL from env via Expo
-│   │   │   └── config.js
+│   │   │   └── TaskCard.js       # Enhanced with due date & priority display
+│   │   ├── config/               # API configuration
+│   │   │   └── config.js         # Uses environment variables
 │   │   ├── context/              # Auth context
 │   │   │   └── AuthContext.js
 │   │   ├── navigation/           # Navigation setup
 │   │   │   └── AppNavigator.js
 │   │   ├── screens/              # Screens
-│   │   │   ├── AddTaskScreen.js
-│   │   │   ├── EditTaskScreen.js
+│   │   │   ├── AddTaskScreen.js  # Enhanced with date/time pickers
+│   │   │   ├── EditTaskScreen.js # Enhanced with date/time pickers
 │   │   │   ├── LoginScreen.js
 │   │   │   ├── RegisterScreen.js
 │   │   │   └── TaskListScreen.js
 │   │   └── services/             # API & notifications
-│   │       ├── api.js
-│   │       └── notificationService.js
+│   │       ├── api.js            # Enhanced with notification scheduling
+│   │       └── notificationService.js # Production-ready notification system
 │   ├── assets/                   # Icons & splash
 │   │   ├── adaptive-icon.png
 │   │   ├── favicon.png
 │   │   ├── icon.png
 │   │   └── splash-icon.png
-│   ├── App.js                    # App entry
+│   ├── App.js                    # App entry with notification setup
 │   ├── index.js                  # Web entry
-│   ├── app.json                  # Static Expo config
-│   ├── app.config.js             # Loads .env → extra.apiUrl
+│   ├── app.json                  # Expo config with notification settings
+│   ├── app.config.js             # Environment variable loader
+│   ├── eas.json                  # EAS build configuration
 │   ├── package.json              # Mobile dependencies/scripts
 │   └── README.md                 # Mobile docs
 │
-├── test-api.js                   # Local API test script
-├── package.json                  # Root package (if used)
 ├── .gitignore                    # Git ignore rules
 └── README.md                     # This file
 ```
@@ -88,12 +92,13 @@ task-manager/
 - npm or yarn
 - MongoDB Atlas account
 - Expo CLI (`npm install -g @expo/cli`)
+- EAS CLI (`npm install -g eas-cli`)
 - Git
 
 ### 1. Clone & Install
 
 ```bash
-# Clone the repository (if using git)
+# Clone the repository
 git clone <your-repo-url>
 cd task-manager
 
@@ -118,7 +123,7 @@ npm install
 2. **Configure Environment Variables:**
    ```bash
    cd backend
-   cp .env.example .env
+   # Create .env file with your values
    ```
    
    Update `.env` with your values:
@@ -138,13 +143,19 @@ npm install
 
 ### 3. Mobile App Setup
 
-1. **Update API URL:**
-   - Open `mobile-app/src/services/api.js`
-   - Update the `BASE_URL` with your deployed backend URL (when ready)
+1. **Configure Environment Variables:**
+   ```bash
+   cd mobile-app
+   # Create .env file
+   ```
+   
+   Add to `.env`:
+   ```env
+   EXPO_PUBLIC_API_URL=https://your-backend-url.onrender.com/api
+   ```
 
 2. **Start Expo Development Server:**
    ```bash
-   cd mobile-app
    npx expo start
    ```
 
@@ -168,7 +179,6 @@ npm install
 
 2. **Deploy on Render:**
    - Connect your GitHub repo to [Render](https://render.com)
-   - Select the `backend` folder as root directory
    - Set environment variables in Render dashboard:
      - `MONGODB_URI`: Your MongoDB Atlas connection string
      - `JWT_SECRET`: A secure random string
@@ -176,15 +186,15 @@ npm install
    - Deploy!
 
 3. **Update Mobile App:**
-   - Update `BASE_URL` in `mobile-app/src/services/api.js` with your Render URL
+   - Update `EXPO_PUBLIC_API_URL` in `mobile-app/.env` with your Render URL
 
 #### Mobile App Deployment
 
 1. **Build for Production:**
    ```bash
    cd mobile-app
-   npx expo build:android
-   npx expo build:ios
+   eas build --profile production --platform android
+   eas build --profile production --platform ios
    ```
 
 2. **Publish to App Stores:**
@@ -198,8 +208,8 @@ npm install
 
 ### Tasks (Protected)
 - `GET /api/tasks` - Get user's tasks
-- `POST /api/tasks` - Create new task
-- `PUT /api/tasks/:id` - Update task
+- `POST /api/tasks` - Create new task (with dueDate, reminderTime, priority)
+- `PUT /api/tasks/:id` - Update task (with dueDate, reminderTime, priority)
 - `DELETE /api/tasks/:id` - Delete task
 
 ## 📱 App Screens
@@ -210,20 +220,23 @@ npm install
 
 2. **Main App Flow:**
    - Task List Screen (with logout)
-   - Add Task Screen
-   - Edit Task Screen
+   - Add Task Screen (with date/time pickers)
+   - Edit Task Screen (with date/time pickers)
 
 ## 🎯 Key Features Implemented
 
 - ✅ **Full Authentication System** - JWT-based with secure storage
 - ✅ **CRUD Operations** - Complete task management
+- ✅ **Calendar Integration** - Date pickers for due dates
+- ✅ **Time-based Reminders** - Time pickers for reminder scheduling
+- ✅ **Push Notifications** - Background notification support
+- ✅ **Task Priorities** - Low, medium, high priority levels
 - ✅ **Real-time Updates** - Instant UI updates after API calls
 - ✅ **Form Validation** - Client and server-side validation
 - ✅ **Error Handling** - Comprehensive error handling
-- ✅ **Push Notifications** - Task completion celebrations
 - ✅ **Responsive Design** - Works on all screen sizes
 - ✅ **Cross-platform** - iOS, Android, and Web support
-- ✅ **Production Ready** - Deployment configurations included
+- ✅ **Production Ready** - EAS builds and deployment configurations
 
 ## 🧪 Testing the App
 
@@ -232,10 +245,11 @@ npm install
 3. **Test Flow:**
    - Register a new account
    - Login with credentials
-   - Create tasks
-   - Edit/toggle task status
+   - Create tasks with due dates and reminders
+   - Test notification scheduling
+   - Edit task priorities
+   - Test push notifications
    - Delete tasks
-   - Test logout functionality
 
 ## 🔒 Security Features
 
@@ -245,6 +259,7 @@ npm install
 - Input validation and sanitization
 - Secure token storage with AsyncStorage
 - CORS protection
+- Environment variable protection
 
 ## 🚨 Common Issues & Solutions
 
@@ -254,23 +269,29 @@ npm install
    - Verify database user permissions
 
 2. **Mobile App Can't Connect to Backend:**
-   - Update API URL in `api.js`
+   - Check environment variables in `.env`
    - For Android emulator, use `10.0.2.2:5000` instead of `localhost:5000`
    - Ensure backend server is running
 
 3. **Push Notifications Not Working:**
    - Check app permissions
    - Test on physical device (not simulator for full functionality)
+   - Verify notification channels are configured
+
+4. **Date/Time Picker Issues:**
+   - Ensure `@react-native-community/datetimepicker` is installed
+   - Test on physical device for best experience
 
 ## 📈 Future Enhancements
 
 - Task categories and tags
-- Due dates and reminders
-- Task priority levels
-- Collaboration features
+- Recurring tasks
+- Task sharing and collaboration
 - Dark mode support
 - Offline functionality
 - Task statistics and analytics
+- Calendar view integration
+- Task templates
 
 ## 🤝 Contributing
 

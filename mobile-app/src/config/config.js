@@ -2,10 +2,7 @@ import Constants from 'expo-constants';
 
 // Get API URL from Expo config extras (injected via app.config.js and .env)
 export const getApiUrl = () => {
-  const url = Constants.expoConfig?.extra?.apiUrl || Constants.manifest?.extra?.apiUrl;
-  if (!url) {
-    console.warn('API URL is not configured. Set API_URL in .env and wire via app.config.js');
-  }
+  const url = Constants.expoConfig?.extra?.apiUrl || 'https://task-manager-wqrk.onrender.com/api';
   return url;
 };
 
